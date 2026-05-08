@@ -27,3 +27,4 @@ def test_distinct_numbers_1():
 def test_distinct_numbers_2():
     assert distinct_numbers(collatz_1m) == 153
     assert distinct_numbers(collatz_556) == 116
+
