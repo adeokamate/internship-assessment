@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import Optional, Dict, Any
 
 from mutagen import File as MutagenFile
@@ -40,6 +39,14 @@ def run_pipeline(
     text_input: Optional[str] = None,
     audio_path: Optional[str] = None,
 ) -> Dict[str, Any]:
+    # Validate target language before making any API calls
+    speaker_id = LANGUAGE_SPEAKERS.get(target_language)
+    if speaker_id is None:
+        raise ValueError(
+            f"Unsupported target language: {target_language}. "
+            f"Supported languages: {list(LANGUAGE_SPEAKERS.keys())}"
+        )
+
     client = SunbirdClient()
 
     transcript = None

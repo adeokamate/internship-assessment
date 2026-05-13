@@ -1,5 +1,5 @@
 import os
-from typing import BinaryIO, Dict, Any
+from typing import Dict, Any
 import mimetypes
 
 
@@ -32,7 +32,7 @@ class SunbirdClient:
     def _handle_response(self, response: requests.Response) -> Dict[str, Any]:
         if not response.ok:
             raise SunbirdAPIError(
-                f"Sunbird API error {response.status_code}: {response.text}"
+                f"Sunbird API error {response.status_code}: {response.text[:500]}"
             )
 
         return response.json()
@@ -55,11 +55,21 @@ class SunbirdClient:
 
         data = self._handle_response(response)
 
-        return (
-            data.get("transcript")
+        transcript = (
+            data.get("audio_transcription")
+            or data.get("transcript")
             or data.get("text")
             or data.get("output", {}).get("text", "")
         )
+
+        if not transcript:
+            raise SunbirdAPIError(
+                "Transcription returned empty text. "
+                f"The API response may be malformed. Keys received: "
+                f"{list(data.keys())}"
+            )
+
+        return transcript
 
     def sunflower_simple(self, instruction: str) -> str:
         url = f"{self.base_url}/tasks/sunflower_simple"
@@ -78,7 +88,12 @@ class SunbirdClient:
         response = requests.post(url, headers=headers, data=payload)
         data = self._handle_response(response)
 
-        return data.get("response", "")
+        resp = data.get("response", "")
+        if not resp:
+            raise SunbirdAPIError(
+                "Sunflower API returned an empty response."
+            )
+        return resp
 
     def summarize_text(self, text: str) -> str:
         url = f"{self.base_url}/tasks/summarise"
@@ -95,7 +110,12 @@ class SunbirdClient:
         response = requests.post(url, headers=headers, json=payload)
         data = self._handle_response(response)
 
-        return data.get("summarized_text", "")
+        summary = data.get("summarized_text", "")
+        if not summary:
+            raise SunbirdAPIError(
+                "Summarization returned empty text. The API response may be malformed."
+            )
+        return summary
 
     def translate_text(self, text: str, target_language: str) -> str:
         instruction = f"""
@@ -123,4 +143,16 @@ Text:
         response = requests.post(url, headers=headers, json=payload)
         data = self._handle_response(response)
 
-        return data["output"]["audio_url"]
+        try:
+            audio_url = data["output"]["audio_url"]
+        except (KeyError, TypeError):
+            raise SunbirdAPIError(
+                "TTS API returned an unexpected response: 'output.audio_url' not found."
+            )
+
+        if not audio_url:
+            raise SunbirdAPIError(
+                "TTS API returned an empty audio URL."
+            )
+
+        return audio_url
