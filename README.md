@@ -1,5 +1,14 @@
-🧠 Sunbird AI Multilingual Summariser
-📌 Project Description
+---
+title: Sunbird AI Multilingual Summariser
+emoji: 🧠
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_port: 7860
+--- 
+ 
+ Sunbird AI Multilingual Summariser
+ Project Description
 
 This application is a Generative AI system built using Sunbird AI services. It allows users to input either text or audio, processes the input through an AI pipeline, and produces:
 
@@ -9,7 +18,7 @@ A synthesized audio output of the translated text
 
 The system integrates Speech-to-Text, Large Language Model (Sunflower), and Text-to-Speech services into a single end-to-end workflow.
 
-🏗️ Architecture Overview
+ Architecture Overview
 
 The application follows this AI processing pipeline:
 
