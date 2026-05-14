@@ -177,3 +177,5 @@ Portfolio: https://adeokamate.github.io/portfolio/
 
 - **GitHub Repo**: [https://github.com/adeokamate/internship-assessment](https://github.com/adeokamate/internship-assessment)
 - **Live App**: [https://huggingface.co/spaces/adeokamate/multilingual-sunbird-assistant](https://huggingface.co/spaces/adeokamate/multilingual-sunbird-assistant)
+
+© 2026 ATUHIIRE DEO KAMATE. Developed for the Sunbird AI Internship Assessment.
