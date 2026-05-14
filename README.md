@@ -165,7 +165,13 @@ Hosted using: Hugging Face Spaces
 
 ## 👨‍💻 Author
 
-Developed as part of the Sunbird AI Internship Assessment
+Developed by ATUHIIRE DEO KAMATE
+Computer Science Student, Makerere University
+
+Built as part of the Sunbird AI Internship Assessment, focusing on multilingual AI workflows including speech transcription, summarization, translation, and text-to-speech generation using Sunbird AI APIs.
+
+GitHub: https://github.com/adeokamate
+Portfolio: https://adeokamate.github.io/portfolio/
 
 ## 🔗 Repository & Deployment
 
