@@ -3,7 +3,7 @@ import tempfile
 import streamlit as st
 from dotenv import load_dotenv
 
-from backend.pipeline import run_pipeline, LANGUAGE_SPEAKERS
+from backend.pipeline import run_pipeline, LANGUAGE_SPEAKERS, PIPELINE_STEPS
 
 
 load_dotenv()
@@ -55,15 +55,55 @@ else:
 
         st.success("Audio uploaded successfully.")
 
+
+def _on_progress(step_index: int, step_name: str, detail: str):
+    """Callback invoked by the pipeline on each step."""
+    # Build a per-step status dict so Streamlit reruns show updates
+    if "progress" not in st.session_state:
+        st.session_state.progress = {}
+    st.session_state.progress[step_index] = {"name": step_name, "detail": detail}
+
+
 if st.button("Run Pipeline"):
+    # Reset progress state
+    st.session_state.progress = {}
+
+    # Create one placeholder per step so the UI updates as each finishes
+    step_placeholders = []
+    for i, step_name in enumerate(PIPELINE_STEPS):
+        ph = st.empty()
+        step_placeholders.append(ph)
+        ph.info(f"⏳ Step {i + 1}/{len(PIPELINE_STEPS)}: {step_name}…")
+
+    overall_placeholder = st.empty()
+    overall_placeholder.info("⏳ Pipeline running…")
+
     try:
-        with st.spinner("Processing with Sunbird AI..."):
-            result = run_pipeline(
-                input_type=input_type,
-                target_language=target_language,
-                text_input=text_input,
-                audio_path=audio_path,
+
+        def progress_callback(step_index, step_name, detail):
+            """Bridge callback: updates the right Streamlit placeholder."""
+            _on_progress(step_index, step_name, detail)
+            step_placeholders[step_index].success(
+                f"✅ Step {step_index + 1}/{len(PIPELINE_STEPS)}: {step_name}"
+                + (f" ({detail})" if detail else "")
             )
+            # Mark all earlier completed steps
+            for j in range(step_index):
+                if j in st.session_state.progress:
+                    step_placeholders[j].success(
+                        f"✅ Step {j + 1}/{len(PIPELINE_STEPS)}: "
+                        f"{st.session_state.progress[j]['name']}"
+                    )
+
+        result = run_pipeline(
+            input_type=input_type,
+            target_language=target_language,
+            text_input=text_input,
+            audio_path=audio_path,
+            progress_callback=progress_callback,
+        )
+
+        overall_placeholder.success("✅ Pipeline complete! Rendering results…")
 
         st.subheader("Original Text")
         st.write(result["original_text"])
@@ -82,4 +122,4 @@ if st.button("Run Pipeline"):
         st.audio(result["audio_url"])
 
     except Exception as error:
-        st.error(str(error))
+        overall_placeholder.error(str(error))

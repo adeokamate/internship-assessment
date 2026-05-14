@@ -1,4 +1,4 @@
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Callable
 
 from mutagen import File as MutagenFile
 
@@ -12,6 +12,15 @@ LANGUAGE_SPEAKERS = {
     "Lugbara": 245,
     "Acholi": 241,
 }
+
+# Pipeline step definitions for progress tracking
+PIPELINE_STEPS = [
+    "validating input",
+    "transcribing audio",
+    "summarizing text",
+    "translating summary",
+    "generating speech",
+]
 
 
 def get_audio_duration_seconds(audio_path: str) -> float:
@@ -38,7 +47,14 @@ def run_pipeline(
     target_language: str,
     text_input: Optional[str] = None,
     audio_path: Optional[str] = None,
+    progress_callback: Optional[Callable[[int, str, str], None]] = None,
 ) -> Dict[str, Any]:
+    """Run the full pipeline with optional progress callback.
+
+    Args:
+        progress_callback: Called as callback(step_index, step_name, detail)
+            on each pipeline step.
+    """
     # Validate target language before making any API calls
     speaker_id = LANGUAGE_SPEAKERS.get(target_language)
     if speaker_id is None:
@@ -49,6 +65,13 @@ def run_pipeline(
 
     client = SunbirdClient()
 
+    def notify(step_index: int, detail: str = ""):
+        if progress_callback:
+            progress_callback(step_index, PIPELINE_STEPS[step_index], detail)
+
+    # Step 0: validate input
+    notify(0)
+
     transcript = None
 
     if input_type == "Audio":
@@ -56,6 +79,8 @@ def run_pipeline(
             raise ValueError("Please upload an audio file.")
 
         validate_audio_duration(audio_path)
+        # Step 1: transcribe
+        notify(1)
         original_text = client.transcribe_audio(audio_path)
         transcript = original_text
 
@@ -65,10 +90,16 @@ def run_pipeline(
 
         original_text = text_input.strip()
 
+    # Step 2: summarize
+    notify(2)
     summary = client.summarize_text(original_text)
+
+    # Step 3: translate
+    notify(3)
     translated_summary = client.translate_text(summary, target_language)
 
-    speaker_id = LANGUAGE_SPEAKERS[target_language]
+    # Step 4: synthesize speech
+    notify(4, f"speaker_id={speaker_id}")
     audio_url = client.synthesize_speech(translated_summary, speaker_id)
 
     return {
