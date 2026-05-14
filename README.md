@@ -47,7 +47,7 @@ Final Output (Text + Audio)
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/<your-username>/internship-assessment.git
+   git clone https://github.com/adeokamate/internship-assessment.git
    cd internship-assessment
    ```
 
