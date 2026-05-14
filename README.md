@@ -121,6 +121,20 @@ Final Output (Text + Audio)
    - Translated text
    - Play audio output
 
+A sample `.ogg` audio file is included for testing speech transcription.
+
+Location:
+
+```
+samples/test_audio.ogg
+```
+
+### Quick Test
+
+1. Upload `samples/test_audio.ogg`
+2. Choose a target language
+3. Click **Run Pipeline**
+
 ## 🌍 Deployment
 
 The application is publicly available at: [https://huggingface.co/spaces/adeokamate/multilingual-sunbird-assistant](https://huggingface.co/spaces/adeokamate/multilingual-sunbird-assistant)
