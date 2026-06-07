@@ -5,6 +5,67 @@ from dotenv import load_dotenv
 
 from backend.pipeline import run_pipeline, LANGUAGE_SPEAKERS, PIPELINE_STEPS
 
+from backend.db import init_db
+from backend.auth import register_user, login_user
+
+
+init_db()
+
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+if "username" not in st.session_state:
+    st.session_state.username = ""
+
+
+def auth_screen():
+    st.title("Sunbird AI Assistant")
+
+    tab1, tab2 = st.tabs(["Login", "Register"])
+
+    with tab1:
+        st.subheader("Login")
+
+        username = st.text_input("Username", key="login_username")
+        password = st.text_input("Password", type="password", key="login_password")
+
+        if st.button("Login"):
+            success, message = login_user(username, password)
+
+            if success:
+                st.session_state.logged_in = True
+                st.session_state.username = username
+                st.success(message)
+                st.rerun()
+            else:
+                st.error(message)
+
+    with tab2:
+        st.subheader("Register")
+
+        username = st.text_input("Choose username", key="register_username")
+        password = st.text_input("Choose password", type="password", key="register_password")
+
+        if st.button("Register"):
+            success, message = register_user(username, password)
+
+            if success:
+                st.success(message)
+            else:
+                st.error(message)
+
+
+if not st.session_state.logged_in:
+    auth_screen()
+    st.stop()
+
+    st.sidebar.write(f"Logged in as: {st.session_state.username}")
+
+if st.sidebar.button("Logout"):
+    st.session_state.logged_in = False
+    st.session_state.username = ""
+    st.rerun()
+
 
 load_dotenv()
 
